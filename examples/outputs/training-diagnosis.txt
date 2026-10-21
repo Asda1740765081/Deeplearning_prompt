@@ -1,0 +1,17 @@
+你是一位资深深度学习工程师，请诊断以下训练异常。
+
+异常现象与日志：
+使用 CrossEntropyLoss 时出现：RuntimeError: expected scalar type Long but found Float。输出张量形状为 [4, 3]，类别标签为一维张量 [0., 1., 2., 1.]，dtype=torch.float32。尚未运行修复或完整训练。
+
+相关代码：
+import torch
+logits = torch.randn(4, 3, requires_grad=True)
+labels = torch.tensor([0., 1., 2., 1.])
+loss = torch.nn.CrossEntropyLoss()(logits, labels)
+
+请不要直接猜一个答案。按概率从高到低列出假设，并为每个假设提供：
+1. 支持与反对证据
+2. 最小验证步骤或监控代码
+3. 确认后的最小修复
+
+依次检查数据、标签、前向维度、损失、梯度、优化器、混合精度、分布式训练和随机性。最后给出一个不超过10步的排查顺序。修改代码时保留原有接口。

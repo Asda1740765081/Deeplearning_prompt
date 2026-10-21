@@ -1,0 +1,22 @@
+{
+  "name": "deepprompt-lab",
+  "version": "0.2.0",
+  "private": true,
+  "description": "A local-first Chinese research prompt workbench for deep learning researchers.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "build:check": "node scripts/build.mjs --check",
+    "start": "node scripts/serve.mjs",
+    "test": "node --test tests/core.test.cjs",
+    "test:e2e": "node tests/browser.cjs",
+    "examples": "node scripts/examples.cjs",
+    "check": "npm run build:check && npm test && npm run examples -- --check && node scripts/check-docs.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

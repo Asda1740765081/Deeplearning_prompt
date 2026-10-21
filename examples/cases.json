@@ -1,0 +1,53 @@
+[
+  {
+    "slug": "paper-screening",
+    "title": "在精读之前筛选材料",
+    "templateId": "paper-fast",
+    "language": "中文",
+    "inputKind": "自编的最小演示摘要，不对应已发表论文，不包含研究效果数据",
+    "values": {
+      "abstract": "标题：面向小样本图像分类的特征缓存方法（演示材料）\n摘要：本示例提出将固定特征编码器与近邻检索结合，在不更新编码器的情况下完成少量标注样本的分类。材料仅描述方法设想，未提供数据集、评估指标、实验结果或公开代码。",
+      "goal": "筛选适合单张消费级 GPU 复现的小样本图像分类方法；优先检查训练成本和评估证据。"
+    },
+    "checks": [
+      "包含调研目标和完整摘要",
+      "保留精读 / 略读 / 跳过的输出结构",
+      "不把未提供的实验数据写成既定结果"
+    ],
+    "humanReview": "AI 给出的相关度和可靠性分数只是阅读辅助判断。必须查阅原始论文和实验；此演示摘要没有足够证据支持有效性结论。"
+  },
+  {
+    "slug": "training-diagnosis",
+    "title": "把训练异常整理为可验证的排查任务",
+    "templateId": "debug",
+    "language": "中文",
+    "inputKind": "最小代码与错误日志演示，不涉及真实研究数据",
+    "values": {
+      "symptom": "使用 CrossEntropyLoss 时出现：RuntimeError: expected scalar type Long but found Float。输出张量形状为 [4, 3]，类别标签为一维张量 [0., 1., 2., 1.]，dtype=torch.float32。尚未运行修复或完整训练。",
+      "code": "import torch\nlogits = torch.randn(4, 3, requires_grad=True)\nlabels = torch.tensor([0., 1., 2., 1.])\nloss = torch.nn.CrossEntropyLoss()(logits, labels)"
+    },
+    "checks": [
+      "保留原始异常和最小代码",
+      "要求支持与反对证据、最小验证步骤和最小修复",
+      "不宣称网站已经运行代码或修好了训练"
+    ],
+    "humanReview": "把生成的提示词交给你选择的 AI 工具后，先人工核对建议，在自己的隔离环境运行最小例子。网站不执行代码，也不收集日志。"
+  },
+  {
+    "slug": "weekly-research-report",
+    "title": "从零散周记到组会讲述结构",
+    "templateId": "weekly-slides",
+    "language": "中文",
+    "inputKind": "自编的演示周记，不代表维护者或真实用户的实验记录",
+    "values": {
+      "work": "本周目标：建立小样本分类基线。\n已完成：整理训练/验证/测试划分脚本；阅读一份近邻分类方法笔记；记录了标签类型错误。\n未完成：训练尚未结束，没有可报告的准确率。\n失败记录：最小例子中的标签 dtype 与损失函数要求不符，待验证修复。\n下周计划：完成数据检查，运行固定随机种子的基线，记录耗时与配置。",
+      "context": "8 分钟、6 页以内，面向导师和同组同学；重点讲清当前证据、失败诊断与下周验收标准。"
+    },
+    "checks": [
+      "保留未完成事项和缺失结果",
+      "要求逐页结论、视觉建议、讲解时间和过渡句",
+      "明确输出为 PPT 规划提示词，网站不生成 PPTX 文件"
+    ],
+    "humanReview": "核对 AI 输出中的每项结果是否来自笔记；没有运行的实验保持待补充状态。排版和 PPTX 制作需要在后续工具中完成。"
+  }
+]

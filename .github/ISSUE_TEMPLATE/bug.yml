@@ -1,0 +1,25 @@
+name: 缺陷报告
+description: 报告可复现的功能或界面问题
+body:
+  - type: markdown
+    attributes:
+      value: 请勿附带私密研究材料、完整个人备份或密钥。
+  - type: input
+    id: environment
+    attributes:
+      label: 浏览器和访问方式
+      placeholder: 例如 Edge / Windows，在线演示或本地文件
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 最小复现步骤
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 实际行为与期望行为
+    validations:
+      required: true

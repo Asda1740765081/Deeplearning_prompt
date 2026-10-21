@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f7f8fa" />
+    <meta
+      name="description"
+      content="面向中文深度学习研究者的开源提示词工作台，提供论文阅读、实验设计、代码研发和研究汇报模板。无需登录，数据保存在本地。"
+    />
+    <title>DeepPrompt Lab · 科研提示词工作台</title>
+    <style>
+      /* SITE_STYLES */
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="mark">∂</div>
+          <div><strong>DeepPrompt Lab</strong><small>YOUR RESEARCH COMPANION</small></div>
+        </div>
+        <div class="nav-label">工作空间 / WORKSPACE</div>
+        <nav id="workspaceNav"></nav>
+        <div class="nav-label">研究流程 / RESEARCH</div>
+        <nav id="researchNav"></nav>
+        <div class="nav-label">个人空间 / PERSONAL</div>
+        <nav id="personalNav"></nav>
+        <div class="sidebar-bottom">
+          <div class="local-status"><i class="dot"></i>本地工作空间</div>
+          <p>灵感有迹可循，研究更进一步。<br />你的模板与填写内容保存在此浏览器。</p>
+        </div>
+      </aside>
+      <div class="mobile-shade" id="mobileShade"></div>
+      <main>
+        <header class="topbar">
+          <button class="icon-btn mobile-menu" id="menuBtn" aria-label="展开导航">☰</button>
+          <div class="breadcrumb">
+            工作空间 <span aria-hidden="true"> / </span><b id="breadcrumb">提示词广场</b>
+          </div>
+          <div class="toolbar">
+            <button class="icon-btn" id="themeBtn" aria-label="切换深浅主题" title="切换深浅主题">
+              ◐</button
+            ><button class="btn" id="backupBtn">↥ <span>备份与导入</span></button
+            ><button class="btn primary" id="createBtn">＋ 新建模板</button>
+          </div>
+        </header>
+        <div class="content">
+          <section class="hero">
+            <div>
+              <div class="eyebrow">LESS PROMPTING. MORE DISCOVERY.</div>
+              <h1>让好问题，<br />成为<span>下一次发现的起点。</span></h1>
+              <p>
+                为科研工作精心整理的结构化提示词。<br />从读懂第一篇论文，到写出下一项成果，让思考更进一步。
+              </p>
+              <button class="hero-link" id="exploreBtn">探索研究模板 <span>↗</span></button>
+            </div>
+            <div class="orbit" aria-hidden="true">
+              <div class="ring"></div>
+              <div class="ring r2"></div>
+              <div class="ring r3"></div>
+              <div class="core">✧</div>
+              <div class="float f1">⌕ &nbsp; 问题 → 假设</div>
+              <div class="float f2">▤ &nbsp; 证据 → 洞见</div>
+              <div class="float f3">⌁ &nbsp; 想法 → 成果</div>
+            </div>
+          </section>
+          <section class="stats" aria-label="工作空间统计">
+            <div class="stat">
+              <div class="stat-icon">▧</div>
+              <div><strong id="totalStat">0</strong><small>精选研究模板</small></div>
+            </div>
+            <div class="stat">
+              <div class="stat-icon">⌘</div>
+              <div><strong>7</strong><small>研究场景</small></div>
+            </div>
+            <div class="stat">
+              <div class="stat-icon">☆</div>
+              <div><strong id="favStat">0</strong><small>我的收藏</small></div>
+            </div>
+            <div class="stat">
+              <div class="stat-icon">↗</div>
+              <div><strong id="recentStat">0</strong><small>最近使用</small></div>
+            </div>
+          </section>
+          <section id="library">
+            <div class="section-heading">
+              <div>
+                <h2 id="sectionTitle">提示词广场</h2>
+                <p id="sectionDesc">每一个研究环节，都有一个好的开始。</p>
+              </div>
+              <div class="toolbar">
+                <button class="chip" id="randomBtn">随机灵感 ↗</button
+                ><span class="results-note" id="resultCount" role="status"></span>
+              </div>
+            </div>
+            <div class="search-row">
+              <div class="search-wrap">
+                <span class="search-symbol" aria-hidden="true">⌕</span
+                ><input
+                  id="search"
+                  aria-label="搜索提示词"
+                  placeholder="搜索模板、研究场景或关键词…"
+                  type="search"
+                /><kbd>Ctrl K</kbd>
+              </div>
+              <select id="difficulty" aria-label="按难度筛选">
+                <option value="all">全部难度</option>
+                <option>入门</option>
+                <option>进阶</option>
+                <option>专家</option>
+                <option>自定义</option></select
+              ><select id="sort" aria-label="排序方式">
+                <option value="default">推荐排序</option>
+                <option value="name">名称排序</option>
+                <option value="rating">我的评分最高</option>
+                <option value="fav">收藏优先</option>
+              </select>
+            </div>
+            <div class="chips" id="chips"></div>
+            <div class="grid" id="grid"></div>
+          </section>
+          <section id="teamView" hidden>
+            <div class="section-heading">
+              <div>
+                <h2>研究 Agent 团队</h2>
+                <p>七个研究角色，一条从问题到成果的完整路径。</p>
+              </div>
+            </div>
+            <div class="agents" id="agents"></div>
+            <div class="team-callout">
+              <div>
+                <strong>把本周研究，串成一个可执行的计划。</strong>
+                <p>
+                  填写研究主题、现有材料与预算，生成团队协调指令。角色模板需复制到你使用的 AI
+                  工具中执行。
+                </p>
+              </div>
+              <button class="btn primary" id="teamStart">创建研究计划 ↗</button>
+            </div>
+            <p class="hint">
+              统一交接约定：区分事实、推断与待验证项；引用来源，不编造结果；每一步留下可供下一角色继续使用的交付物。
+            </p>
+          </section>
+          <footer class="footer">
+            <span>DeepPrompt Lab &nbsp; / &nbsp; 为严谨的思考，留出更多时间。</span
+            ><span
+              ><a
+                href="https://github.com/Asda1740765081/Deeplearning_prompt"
+                target="_blank"
+                rel="noopener noreferrer"
+                >GitHub</a
+              >
+              ·
+              <a
+                href="https://github.com/Asda1740765081/Deeplearning_prompt/blob/main/docs/EXAMPLES.md"
+                target="_blank"
+                rel="noopener noreferrer"
+                >使用案例</a
+              >
+              · 本地保存 · 请核验 AI 输出与文献来源</span
+            >
+          </footer>
+        </div>
+      </main>
+    </div>
+    <dialog id="editor" aria-labelledby="editorTitle">
+      <div class="dialog-head">
+        <div>
+          <span class="badge" id="editorBadge"></span>
+          <h2 id="editorTitle"></h2>
+        </div>
+        <button class="icon-btn" id="closeEditor" aria-label="关闭提示词编辑器">×</button>
+      </div>
+      <div class="dialog-body">
+        <p id="editorDesc"></p>
+        <div class="editor-options">
+          <span id="draftStatus">填写研究信息</span
+          ><label
+            >输出语言
+            <select id="language">
+              <option value="中文">中文</option>
+              <option value="English">English</option>
+            </select></label
+          >
+        </div>
+        <div id="fields"></div>
+        <div class="preview-heading">
+          <strong>完整提示词预览</strong><span id="wordCount"></span>
+        </div>
+        <div class="preview" id="preview"></div>
+        <div class="rating" id="rating" aria-label="使用效果评分"></div>
+        <div id="customTools" class="manager-actions" hidden>
+          <button class="btn" id="editCustom">编辑模板</button
+          ><button class="btn danger" id="deleteCustom">删除模板</button>
+        </div>
+      </div>
+      <div class="dialog-foot">
+        <button class="btn" id="shareBtn" title="分享模板，不携带填写材料">分享</button
+        ><button class="btn" id="resetBtn">重置</button
+        ><button class="btn" id="downloadBtn">下载文本</button
+        ><button class="btn primary" id="copyBtn">复制完整提示词 ↗</button>
+      </div>
+    </dialog>
+    <dialog id="manager" aria-labelledby="managerTitle">
+      <div class="dialog-head">
+        <div>
+          <div class="eyebrow">PERSONAL LIBRARY</div>
+          <h2 id="managerTitle">新建研究模板</h2>
+        </div>
+        <button class="icon-btn" id="closeManager" aria-label="关闭模板管理">×</button>
+      </div>
+      <div class="dialog-body">
+        <form id="customForm">
+          <div class="field">
+            <label for="customTitle">模板名称</label
+            ><input
+              id="customTitle"
+              required
+              maxlength="100"
+              placeholder="例如：实验结果的统计分析"
+            />
+          </div>
+          <div class="field">
+            <label for="customDesc">用途简介</label
+            ><input id="customDesc" maxlength="500" placeholder="这个模板能帮你解决什么问题？" />
+          </div>
+          <div class="field">
+            <label for="customCat">研究场景</label
+            ><select id="customCat"></select>
+          </div>
+          <div class="field">
+            <label for="customTemplate">提示词正文</label
+            ><textarea
+              id="customTemplate"
+              required
+              placeholder="请分析 {{研究数据}}，围绕 {{研究问题}} 给出结论…"
+              style="min-height: 160px"
+            ></textarea>
+          </div>
+          <p class="hint">使用 {{变量名}} 创建填写项，支持中文变量名。</p>
+          <div class="field">
+            <label for="customTags">标签（逗号分隔）</label
+            ><input id="customTags" placeholder="统计分析, 结果解读" />
+          </div>
+          <button class="btn primary" type="submit">保存模板</button>
+        </form>
+        <div id="backupPanel" hidden>
+          <p class="hint">
+            备份包含个人模板、收藏、评分和填写草稿。导入时合并内容，同一模板不重复添加；现有草稿优先保留。
+          </p>
+          <div class="manager-actions">
+            <button class="btn primary" id="exportBtn">导出完整备份</button
+            ><button class="btn" id="importBtn">导入 JSON</button
+            ><input type="file" id="importInput" accept=".json,application/json" hidden />
+          </div>
+          <p class="hint">备份文件包含你填写的研究材料，请妥善保存。</p>
+        </div>
+      </div>
+    </dialog>
+    <div class="toast" id="toast" role="status"></div>
+    <script>
+      /* TEMPLATE_DATA */
+      /* APP_CODE */
+    </script>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+name: 模板或工作流建议
+description: 提出具体研究任务与可验收的模板需求
+body:
+  - type: textarea
+    id: task
+    attributes:
+      label: 研究任务和现有困难
+    validations:
+      required: true
+  - type: textarea
+    id: materials
+    attributes:
+      label: 最小公开输入和期望输出
+      description: 使用自编或已获授权的材料，不上传未发表论文。
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: 如何人工核验结果
+    validations:
+      required: true
