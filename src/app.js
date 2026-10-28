@@ -129,6 +129,7 @@ function renderNav() {
   $('#recentStat').textContent = recent.length;
 }
 function navigate(id) {
+  if (id === 'writing') writingMode = 'flow';
   scope = id;
   scene = 'all';
   $('#search').value = '';
@@ -161,9 +162,153 @@ function filtered() {
   if (sort === 'fav') list.sort((a, b) => Number(favs.has(b.id)) - Number(favs.has(a.id)));
   return list;
 }
+
+const savedFlow = object(read('dp-writing-flow', {}));
+let flowStage = writingWorkflow.some((s) => s.id === savedFlow.stage)
+  ? savedFlow.stage
+  : writingWorkflow[0].id;
+const flowCompleted = new Set(
+  Array.isArray(savedFlow.completed)
+    ? savedFlow.completed.filter((id) => writingWorkflow.some((s) => s.id === id))
+    : []
+);
+let writingMode = 'flow';
+function saveWritingFlow() {
+  write('dp-writing-flow', { stage: flowStage, completed: [...flowCompleted] });
+}
+function selectWritingStage(id) {
+  if (!writingWorkflow.some((s) => s.id === id)) return;
+  flowStage = id;
+  saveWritingFlow();
+  renderWritingFlow();
+}
+function openWritingTemplate(id) {
+  openPrompt(id);
+  const stage = writingWorkflow.find((s) => s.id === flowStage);
+  const i = writingWorkflow.indexOf(stage),
+    next = writingWorkflow[i + 1];
+  $('#writingHandoff').hidden = false;
+  $('#writingHandoff').innerHTML =
+    '<strong>用完这个模板后</strong><p>' +
+    esc(stage.output) +
+    '</p><p>' +
+    esc(
+      next
+        ? '本阶段核验完成后，进入「' + next.title + '」。'
+        : '修回完成后，按需要返回全文核验；流程可以反复迭代。'
+    ) +
+    '</p><button class="btn" id="returnWritingStage">返回流程，核验本阶段 →</button>';
+  $('#returnWritingStage').onclick = () => {
+    $('#editor').close();
+    $('#flowDetail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+}
+function renderWritingFlow() {
+  const stage = writingWorkflow.find((s) => s.id === flowStage),
+    index = writingWorkflow.indexOf(stage);
+  $('#flowProgress').textContent =
+    '已核验 ' + flowCompleted.size + ' / ' + writingWorkflow.length + ' 阶段';
+  $('#flowStages').innerHTML = writingWorkflow
+    .map(
+      (s, i) =>
+        '<button class="flow-stage ' +
+        (s.id === flowStage ? 'selected' : '') +
+        '" data-flow-stage="' +
+        s.id +
+        '" ' +
+        (s.id === flowStage ? 'aria-current="step"' : '') +
+        '><span class="stage-number">' +
+        (flowCompleted.has(s.id) ? '✓' : String(i + 1).padStart(2, '0')) +
+        '</span><span>' +
+        esc(s.title) +
+        '<small>' +
+        (flowCompleted.has(s.id)
+          ? '已手动核验'
+          : i === 0
+            ? '建议从这里开始'
+            : i === 8
+              ? '收到审稿意见后使用'
+              : '可按准备程度跳转') +
+        '</small></span></button>'
+    )
+    .join('');
+  $('#flowStages')
+    .querySelectorAll('button')
+    .forEach((b) => (b.onclick = () => selectWritingStage(b.dataset.flowStage)));
+  if (window.matchMedia('(max-width: 760px)').matches) {
+    const stages = $('#flowStages'), selected = stages.querySelector('[aria-current="step"]');
+    stages.scrollLeft += selected.getBoundingClientRect().left - stages.getBoundingClientRect().left - (stages.clientWidth - selected.clientWidth) / 2;
+  }
+  const templateButton = (id, i, optional) => {
+    const p = prompts.find((p) => p.id === id);
+    return (
+      '<button class="flow-template ' +
+      (optional ? 'optional' : '') +
+      '" data-flow-open="' +
+      id +
+      '"><span>' +
+      (optional
+        ? '按需使用'
+        : String(i + 1).padStart(2, '0') + ' · ' + (i === 0 ? '先用这个' : '接着使用')) +
+      '</span><strong>' +
+      esc(p.title) +
+      ' ↗</strong><small>' +
+      esc(p.desc) +
+      '</small></button>'
+    );
+  };
+  $('#flowDetail').innerHTML =
+    '<div class="eyebrow">STEP ' +
+    String(index + 1).padStart(2, '0') +
+    ' / ' +
+    writingWorkflow.length +
+    '</div><h3>' +
+    esc(stage.title) +
+    '</h3><p class="flow-when">' +
+    esc(stage.when) +
+    '</p><div class="flow-materials"><div><strong>准备什么</strong><p>' +
+    esc(stage.input) +
+    '</p></div><div><strong>做到什么再往下走</strong><p>' +
+    esc(stage.output) +
+    '</p></div></div><h4>推荐顺序</h4><div class="flow-templates">' +
+    stage.primary.map((id, i) => templateButton(id, i, false)).join('') +
+    '</div><details class="flow-options"><summary>本阶段可选工具 · ' +
+    stage.optional.length +
+    ' 个</summary><div class="flow-templates">' +
+    stage.optional.map((id, i) => templateButton(id, i, true)).join('') +
+    '</div></details><p class="flow-note">' +
+    esc(stage.note) +
+    '</p><div class="flow-controls"><button class="btn" id="flowPrevious" ' +
+    (index === 0 ? 'disabled' : '') +
+    '>← 上一阶段</button><button class="btn" id="flowComplete" aria-pressed="' +
+    flowCompleted.has(stage.id) +
+    '">' +
+    (flowCompleted.has(stage.id) ? '✓ 已核验完成 · 点击撤销' : '标记本阶段已核验') +
+    '</button><button class="btn primary" id="flowNext" ' +
+    (index === writingWorkflow.length - 1 ? 'disabled' : '') +
+    '>下一阶段 →</button></div>';
+  $('#flowDetail')
+    .querySelectorAll('[data-flow-open]')
+    .forEach((b) => (b.onclick = () => openWritingTemplate(b.dataset.flowOpen)));
+  $('#flowPrevious').onclick = () => selectWritingStage(writingWorkflow[index - 1].id);
+  $('#flowNext').onclick = () => selectWritingStage(writingWorkflow[index + 1].id);
+  $('#flowComplete').onclick = () => {
+    flowCompleted.has(stage.id) ? flowCompleted.delete(stage.id) : flowCompleted.add(stage.id);
+    saveWritingFlow();
+    renderWritingFlow();
+  };
+}
+
 function render() {
+  $('.hero').hidden = scope === 'writing';
+  $('.stats').hidden = scope === 'writing';
+  $('#writingStarter').hidden = scope !== 'all';
+  const flowVisible = scope === 'writing' && writingMode === 'flow';
+  $('#writingFlow').hidden = !flowVisible;
+  $('#backToFlow').hidden = !(scope === 'writing' && writingMode === 'library');
+  if (flowVisible) renderWritingFlow();
   renderNav();
-  $('#library').hidden = scope === 'team';
+  $('#library').hidden = scope === 'team' || flowVisible;
   $('#teamView').hidden = scope !== 'team';
   const cat = categories.find((c) => c.id === scope);
   $('#breadcrumb').textContent =
@@ -183,6 +328,10 @@ function render() {
     .forEach(
       (b) =>
         (b.onclick = () => {
+          if (b.dataset.scene === 'writing') {
+            navigate('writing');
+            return;
+          }
           scene = b.dataset.scene;
           render();
         })
@@ -262,6 +411,7 @@ function renderRating() {
     );
 }
 function openPrompt(id) {
+  $('#writingHandoff').hidden = true;
   active = prompts.find((p) => p.id === id);
   if (!active) return;
   recent = [id, ...recent.filter((x) => x !== id)].slice(0, 12);
@@ -270,6 +420,28 @@ function openPrompt(id) {
   $('#editorBadge').textContent = sceneCats.find((c) => c.id === active.cat)?.name || '个人模板';
   $('#editorTitle').textContent = active.title;
   $('#editorDesc').textContent = active.desc;
+  const guide = $('#researchGuide');
+  guide.hidden = !active.inspiration;
+  guide.innerHTML = active.inspiration
+    ? '<strong>预期交付</strong><p>' +
+      esc(active.deliverable) +
+      '</p><strong>使用后核验</strong><ul>' +
+      active.checks.map((c) => '<li>' + esc(c) + '</li>').join('') +
+      '</ul><div class="source-links">结构参考：' +
+      active.inspiration
+        .map((id) => {
+          const s = researchSources.find((x) => x.id === id);
+          return s
+            ? '<a href="' +
+                esc(s.url) +
+                '" target="_blank" rel="noopener noreferrer">' +
+                esc(s.name) +
+                ' ↗</a>'
+            : '';
+        })
+        .join(' · ') +
+      '<small>本地重新编写，不代表上游认可或效果验证。</small></div>'
+    : '';
   $('#language').value = draft.lang === 'English' ? 'English' : '中文';
   $('#draftStatus').textContent = draft.values ? '已恢复上次填写的草稿' : '填写研究信息';
   $('#fields').innerHTML = active.fields
@@ -570,3 +742,79 @@ if (location.hash.startsWith('#share=')) {
     toast('分享链接无法读取');
   }
 }
+
+// Optional local Web Audio feedback. Never plays on page load.
+let soundOn = read('dp-sound', false) === true,
+  soundContext;
+function soundState() {
+  const b = $('#soundBtn');
+  b.setAttribute('aria-pressed', String(soundOn));
+  b.setAttribute('aria-label', '点击音效：' + (soundOn ? '开启' : '关闭'));
+  b.title = soundOn ? '关闭点击音效' : '开启点击音效';
+  b.classList.toggle('sound-on', soundOn);
+}
+function playClick() {
+  if (!soundOn) return;
+  try {
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return;
+    soundContext = soundContext || new C();
+    if (soundContext.state === 'suspended') soundContext.resume().catch(() => {});
+    const t = soundContext.currentTime,
+      o = soundContext.createOscillator(),
+      g = soundContext.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(720, t);
+    o.frequency.exponentialRampToValueAtTime(420, t + 0.045);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.025, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.055);
+    o.connect(g);
+    g.connect(soundContext.destination);
+    o.start(t);
+    o.stop(t + 0.06);
+  } catch {}
+}
+$('#soundBtn').onclick = () => {
+  soundOn = !soundOn;
+  write('dp-sound', soundOn);
+  soundState();
+  if (soundOn) playClick();
+  toast(soundOn ? '点击音效已开启' : '点击音效已关闭');
+};
+soundState();
+document.addEventListener(
+  'click',
+  (e) => {
+    const b = e.target.closest('button');
+    if (!b || b.disabled) return;
+    if (b.id !== 'soundBtn') playClick();
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      b.classList.remove('tap-feedback');
+      void b.offsetWidth;
+      b.classList.add('tap-feedback');
+      setTimeout(() => b.classList.remove('tap-feedback'), 180);
+    }
+  },
+  true
+);
+
+document
+  .querySelectorAll('[data-writing-start]')
+  .forEach((b) => (b.onclick = () => openPrompt(b.dataset.writingStart)));
+
+$('#enterWritingFlow').onclick = () => {
+  navigate('writing');
+  $('#writingFlow').scrollIntoView({ behavior: 'smooth' });
+};
+$('#flowBrowse').onclick = () => {
+  writingMode = 'library';
+  render();
+};
+$('#backToFlow').onclick = () => {
+  writingMode = 'flow';
+  render();
+};
+document
+  .querySelectorAll('[data-flow-start]')
+  .forEach((b) => (b.onclick = () => selectWritingStage(b.dataset.flowStart)));

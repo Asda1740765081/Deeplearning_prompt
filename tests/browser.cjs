@@ -54,9 +54,9 @@ async function fillExample(page, example) {
     page.on('pageerror', (e) => errors.push(e.message));
     await page.goto(base);
     await check('all templates and research scenes render', async () => {
-      assert.equal(await page.locator('.card').count(), 33);
+      assert.equal(await page.locator('.card').count(), 46);
       assert.equal(await page.locator('#researchNav button').count(), 7);
-      assert.equal(await page.locator('#totalStat').innerText(), '33');
+      assert.equal(await page.locator('#totalStat').innerText(), '46');
     });
     if (capture) await page.screenshot({ path: path.join(root, 'docs/screenshots/workspace.png') });
     await check('keyword and difficulty filters change actual results', async () => {
@@ -145,17 +145,15 @@ async function fillExample(page, example) {
       await p.locator('#toast').filter({ hasText: '新增 1 个模板' }).waitFor();
       await p.locator('#importInput').setInputFiles(file);
       await p.locator('#toast').filter({ hasText: '新增 0 个模板' }).waitFor();
-      await p
-        .locator('#importInput')
-        .setInputFiles({
-          name: 'bad.json',
-          mimeType: 'application/json',
-          buffer: Buffer.from('{bad')
-        });
+      await p.locator('#importInput').setInputFiles({
+        name: 'bad.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from('{bad')
+      });
       await p.locator('#toast').filter({ hasText: '导入失败' }).waitFor();
       await p.locator('#closeManager').click();
       await p.reload();
-      assert.equal(await p.locator('#totalStat').innerText(), '34');
+      assert.equal(await p.locator('#totalStat').innerText(), '47');
       assert.equal(await p.locator('#favStat').innerText(), '1');
       await p.locator('[data-open="debug"]').click();
       assert.equal(await p.locator('[data-rate="4"]').getAttribute('aria-pressed'), 'true');
@@ -185,7 +183,7 @@ async function fillExample(page, example) {
       assert.equal(await p.locator('#editorTitle').innerText(), '可编辑的研究模板');
       await p.locator('#closeEditor').click();
       await p.goto(base);
-      assert.equal(await p.locator('#totalStat').innerText(), '34');
+      assert.equal(await p.locator('#totalStat').innerText(), '47');
       await fresh.close();
       await page.locator('#closeEditor').click();
       await page.locator('[data-nav="all"]').click();
@@ -241,11 +239,156 @@ async function fillExample(page, example) {
       const local = await browser.newContext();
       const p = await local.newPage();
       await p.goto(pathToFileURL(path.join(root, 'index.html')).href);
-      assert.equal(await p.locator('.card').count(), 33);
+      assert.equal(await p.locator('.card').count(), 46);
       await p.locator('[data-open="paper-fast"]').click();
       assert(await p.locator('#editor').isVisible());
       await local.close();
     });
+    await check(
+      'manuscript workflow and new research templates provide usable fields and guidance',
+      async () => {
+        await page.locator('[data-nav="all"]').click();
+        assert(await page.locator('#writingStarter').isVisible());
+        await page.locator('[data-writing-start="paper-first-draft"]').click();
+        assert.equal(await page.locator('#editorTitle').innerText(), '基于证据的论文完整初稿');
+        assert(await page.locator('#researchGuide').isVisible());
+        assert.equal(await page.locator('#researchGuide a').count(), 2);
+        const freshIds = [
+          'search-strategy',
+          'evidence-extraction',
+          'claim-evidence-audit',
+          'research-question',
+          'analysis-plan',
+          'reproducibility-audit',
+          'results-discussion',
+          'academic-translation',
+          'manuscript-outline',
+          'paper-introduction',
+          'paper-methods',
+          'paper-results',
+          'paper-first-draft'
+        ];
+        await page.locator('#closeEditor').click();
+        for (const id of freshIds) {
+          const p = prompts.find((x) => x.id === id);
+          await page.locator(`[data-open="${id}"]`).click();
+          for (let i = 0; i < p.fields.length; i++)
+            await page.locator(`#field-${i}`).fill('演示材料：此项需人工核验。');
+          assert(!(await page.locator('#preview').innerText()).includes('[请填写：'));
+          await page.locator('#closeEditor').click();
+        }
+      }
+    );
+    await check('sound is opt-in, persists, and reduced-motion suppresses animation', async () => {
+      const sound = await browser.newContext({ reducedMotion: 'reduce' });
+      await sound.addInitScript(() => {
+        const Original = window.AudioContext;
+        window.__toneCount = 0;
+        window.AudioContext = class extends Original {
+          createOscillator() {
+            window.__toneCount++;
+            return super.createOscillator();
+          }
+        };
+      });
+      const p = await sound.newPage();
+      await p.goto(base);
+      assert.equal(await p.locator('#soundBtn').getAttribute('aria-pressed'), 'false');
+      await p.locator('#createBtn').click();
+      await p.locator('#closeManager').click();
+      assert.equal(await p.evaluate(() => window.__toneCount), 0);
+      await p.locator('#soundBtn').click();
+      assert.equal(await p.locator('#soundBtn').getAttribute('aria-pressed'), 'true');
+      assert((await p.evaluate(() => window.__toneCount)) > 0);
+      await p.reload();
+      assert.equal(await p.locator('#soundBtn').getAttribute('aria-pressed'), 'true');
+      assert.equal(await p.evaluate(() => window.__toneCount), 0);
+      await p.locator('#soundBtn').click();
+      await p.locator('#createBtn').click();
+      assert.equal(await p.evaluate(() => window.__toneCount), 0);
+      await p.locator('#closeManager').click();
+      assert.equal(
+        await p
+          .locator('.card')
+          .first()
+          .evaluate((el) => getComputedStyle(el).animationName),
+        'none'
+      );
+      await sound.close();
+    });
+    await check(
+      'writing roadmap recommends order, preserves progress, and returns from templates',
+      async () => {
+        await page.goto(base);
+        await page.locator('[data-nav="writing"]').click();
+        assert(await page.locator('#writingFlow').isVisible());
+        assert(!(await page.locator('#library').isVisible()));
+        assert.equal(await page.locator('[data-flow-stage]').count(), 9);
+        assert.equal(
+          await page.locator('[aria-current="step"]').getAttribute('data-flow-stage'),
+          'prepare'
+        );
+        assert(await page.locator('[data-flow-open="research-question"]').isVisible());
+        await page.locator('[data-flow-open="research-question"]').click();
+        assert(await page.locator('#writingHandoff').isVisible());
+        await page.locator('#returnWritingStage').click();
+        assert((await page.locator('#flowProgress').innerText()).includes('0 / 9'));
+        await page.locator('#flowComplete').click();
+        assert((await page.locator('#flowProgress').innerText()).includes('1 / 9'));
+        await page.locator('#flowNext').click();
+        assert(await page.locator('[data-flow-open="manuscript-outline"]').isVisible());
+        await page.reload();
+        await page.locator('[data-nav="writing"]').click();
+        assert.equal(
+          await page.locator('[aria-current="step"]').getAttribute('data-flow-stage'),
+          'story'
+        );
+        assert((await page.locator('#flowProgress').innerText()).includes('1 / 9'));
+        await page.locator('[data-flow-start="audit"]').click();
+        assert(await page.locator('[data-flow-open="polish"]').isVisible());
+        await page.locator('#flowBrowse').click();
+        assert(await page.locator('#library').isVisible());
+        assert.equal(
+          await page.locator('.card').count(),
+          prompts.filter((p) => p.cat === 'writing').length
+        );
+        await page.locator('#backToFlow').click();
+        assert(await page.locator('#writingFlow').isVisible());
+        await page.locator('[data-nav="all"]').click();
+      }
+    );
+    await check(
+      'mobile writing roadmap allows stage navigation without horizontal page overflow',
+      async () => {
+        const mobile = await browser.newContext({ viewport: { width: 390, height: 844 } });
+        const p = await mobile.newPage();
+        await p.goto(base);
+        await p.locator('#enterWritingFlow').click();
+        assert(await p.locator('#writingFlow').isVisible());
+        assert(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+        await p.locator('[data-flow-start="story"]').click();
+        await p.locator('[data-flow-open="manuscript-outline"]').click();
+        assert(await p.locator('#editor').isVisible());
+        await p.locator('#returnWritingStage').click();
+        await p.locator('#flowNext').click();
+        assert(await p.locator('[data-flow-open="paper-methods"]').isVisible());
+        if (capture)
+          await p.screenshot({
+            path: path.join(root, 'docs/screenshots/writing-flow-mobile.png'),
+            fullPage: true
+          });
+        await mobile.close();
+        if (capture) {
+          await page.locator('[data-nav="writing"]').click();
+          await page.locator('[data-flow-start="story"]').click();
+          await page.screenshot({
+            path: path.join(root, 'docs/screenshots/writing-flow.png'),
+            fullPage: true
+          });
+          await page.locator('[data-nav="all"]').click();
+        }
+      }
+    );
     await check('no uncaught page errors in the desktop acceptance flow', async () =>
       assert.deepEqual(errors, [])
     );

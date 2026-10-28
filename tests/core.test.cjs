@@ -4,9 +4,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 const lib = require('../scripts/load-data.cjs')();
 
-test('all 33 templates have unique IDs, valid scenes, and complete field definitions', () => {
-  assert.equal(lib.prompts.length, 33);
-  assert.equal(new Set(lib.prompts.map((p) => p.id)).size, 33);
+test('writing roadmap has unique stages and every recommended template exists', () => {
+  assert.equal(new Set(lib.writingWorkflow.map((s) => s.id)).size, lib.writingWorkflow.length);
+  assert(lib.writingWorkflow.length >= 8);
+  for (const stage of lib.writingWorkflow) {
+    assert(stage.input && stage.output && stage.when && stage.primary.length);
+    for (const id of [...stage.primary, ...stage.optional])
+      assert(
+        lib.prompts.some((p) => p.id === id),
+        id
+      );
+  }
+});
+
+test('all 46 templates have unique IDs, valid scenes, and complete field definitions', () => {
+  assert.equal(lib.prompts.length, 46);
+  assert.equal(new Set(lib.prompts.map((p) => p.id)).size, 46);
   for (const p of lib.prompts) {
     assert(
       lib.categories.some((c) => c.id === p.cat),

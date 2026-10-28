@@ -8,7 +8,7 @@ module.exports = function loadData() {
     fs.readFileSync(path.join(root, 'src/data.js'), 'utf8') +
       '\n' +
       fs.readFileSync(path.join(root, 'src/core.js'), 'utf8') +
-      '\nglobalThis.library = { prompts, categories, researchAgents, renderPrompt, encodeShare, decodeShare, prepareImport };',
+      '\nglobalThis.library = { prompts, categories, researchAgents, writingWorkflow, renderPrompt, encodeShare, decodeShare, prepareImport };',
     sandbox
   );
   return sandbox.library;

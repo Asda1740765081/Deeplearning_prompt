@@ -13,7 +13,7 @@
 
 科研任务需要交代背景、已有证据、约束和输出要求。只输入一句“帮我读论文”或“帮我调代码”，往往遗漏这些信息；每次从头组织完整指令又会重复劳动。
 
-DeepPrompt Lab 提供 **33 个结构化模板、7 类研究场景和 7 个研究角色模板**。选择场景，填写材料，检查完整提示词，再复制到你选择的 AI 工具中。它适合研究生、整理实验任务的研究者，以及希望复用研究工作流的开发者。
+DeepPrompt Lab 提供 **46 个结构化模板、7 类研究场景和 7 个研究角色模板**。选择场景，填写材料，检查完整提示词，再复制到你选择的 AI 工具中。它适合研究生、整理实验任务的研究者，以及希望复用研究工作流的开发者。
 
 这是一个早期开源项目。当前交付是可运行的静态工作台、可检查的模板和确定性测试；尚无经过独立验证的研究效率提升或广泛采用数据。
 
@@ -35,6 +35,8 @@ DeepPrompt Lab 提供 **33 个结构化模板、7 类研究场景和 7 个研究
 ![填写训练异常材料并查看完整提示词](docs/screenshots/editor.png)
 
 ## 两分钟开始使用
+
+**不知道论文写作先用哪个模板？** 点击左侧“论文写作”或首页“开始论文写作流程”，进入从材料准备到投稿修回的九阶段引导。每阶段有输入清单、完成标准、推荐模板顺序和下一步，可按“只有选题 / 已有实验 / 已有草稿”选择起点。详见[论文写作流程](docs/WRITING-WORKFLOW.md)。
 
 1. 打开[在线演示](https://asda1740765081.github.io/Deeplearning_prompt/)，搜索“训练异常诊断”，或选择研究场景。
 2. 点击“使用模板”，填写异常日志、最小代码等材料，输入会自动保存为草稿。
@@ -120,6 +122,10 @@ GitHub Actions 对提交和 Pull Request 执行构建一致性、核心测试和
 
 ## English overview
 
-DeepPrompt Lab is an MIT-licensed, local-first prompt workbench for Chinese-speaking deep learning researchers. It offers 33 structured templates across seven research scenarios, seven role prompts, editable variables, personal templates, draft recovery, backup/restore, and template sharing. Open the [live demo](https://asda1740765081.github.io/Deeplearning_prompt/) or the standalone `index.html`.
+DeepPrompt Lab is an MIT-licensed, local-first prompt workbench for Chinese-speaking deep learning researchers. It offers 46 structured templates across seven research scenarios, seven role prompts, editable variables, personal templates, draft recovery, backup/restore, and template sharing. Open the [live demo](https://asda1740765081.github.io/Deeplearning_prompt/) or the standalone `index.html`.
 
 It prepares instructions for an AI tool of your choice. It does not call a model, run experiments, orchestrate agents, verify citations, or generate slides. Three reproducible walkthroughs and automated checks document actual behavior; they are not evidence of model effectiveness or user adoption. See [CONTRIBUTING.md](CONTRIBUTING.md) to contribute. Licensed under [MIT](LICENSE).
+
+## v0.3.0 科研与写作流程增强（2026-10-28）
+
+新增13个研究模板（含5个从大纲到全文的论文写作模板），升级4个既有模板的证据边界；科研模板编辑器显示交付物、核验清单与结构参考来源。加入可关闭、默认静音的点击音效及遵循减少动态效果设置的轻量动画。详见 [来源与改写说明](docs/SOURCES.md)。论文写作默认提供九阶段流程，详见 [写作流程说明](docs/WRITING-WORKFLOW.md)。

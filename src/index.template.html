@@ -39,6 +39,15 @@
             工作空间 <span aria-hidden="true"> / </span><b id="breadcrumb">提示词广场</b>
           </div>
           <div class="toolbar">
+            <button
+              class="icon-btn"
+              id="soundBtn"
+              aria-label="点击音效：关闭"
+              aria-pressed="false"
+              title="开启点击音效"
+            >
+              ♪
+            </button>
             <button class="icon-btn" id="themeBtn" aria-label="切换深浅主题" title="切换深浅主题">
               ◐</button
             ><button class="btn" id="backupBtn">↥ <span>备份与导入</span></button
@@ -83,6 +92,50 @@
               <div><strong id="recentStat">0</strong><small>最近使用</small></div>
             </div>
           </section>
+          <section class="writing-starter" id="writingStarter">
+            <div>
+              <span class="eyebrow">MANUSCRIPT WORKFLOW</span>
+              <h2>写论文，不用再猜先选哪个模板</h2>
+              <button class="btn primary" id="enterWritingFlow">开始论文写作流程 →</button>
+              <p>已有研究材料 → 故事线与大纲 → 分节起草 → 全文核验</p>
+            </div>
+            <div class="writing-steps">
+              <button class="btn" data-writing-start="manuscript-outline">
+                01 故事线 / 大纲 ↗</button
+              ><button class="btn" data-writing-start="paper-introduction">02 引言 ↗</button
+              ><button class="btn" data-writing-start="paper-methods">03 方法 ↗</button
+              ><button class="btn" data-writing-start="paper-results">04 结果 ↗</button
+              ><button class="btn" data-writing-start="paper-first-draft">05 完整初稿 ↗</button>
+            </div>
+          </section>
+          <section id="writingFlow" class="writing-flow" hidden aria-labelledby="flowTitle">
+            <div class="flow-heading">
+              <div>
+                <div class="eyebrow">GUIDED WRITING</div>
+                <h2 id="flowTitle">论文写作 · 从准备到修回</h2>
+                <p>按研究准备程度选择起点；阶段顺序是建议，可以随时跳转。</p>
+              </div>
+              <button class="btn" id="flowBrowse">浏览全部写作模板 ↗</button>
+            </div>
+            <div class="flow-starts" aria-label="选择写作起点">
+              <span>我现在：</span
+              ><button class="chip" data-flow-start="prepare">只有选题 / 零散材料</button
+              ><button class="chip" data-flow-start="story">已有方法和实验</button
+              ><button class="chip" data-flow-start="audit">已有完整草稿</button>
+            </div>
+            <div class="flow-progress">
+              <span id="flowProgress" role="status"></span
+              ><span>由你手动核验完成；打开模板不等于完成研究</span>
+            </div>
+            <div class="flow-layout">
+              <nav class="flow-stages" id="flowStages" aria-label="论文写作阶段"></nav>
+              <section class="flow-detail" id="flowDetail" aria-live="polite"></section>
+            </div>
+            <p class="hint">
+              这份流程清单只保存在当前浏览器。每一步需要将外部 AI
+              的产物人工核验后带入下一步，网站不会自动执行、生成文件或传递材料。
+            </p>
+          </section>
           <section id="library">
             <div class="section-heading">
               <div>
@@ -118,6 +171,7 @@
               </select>
             </div>
             <div class="chips" id="chips"></div>
+            <button class="btn" id="backToFlow" hidden>← 返回论文写作流程</button>
             <div class="grid" id="grid"></div>
           </section>
           <section id="teamView" hidden>
@@ -174,6 +228,7 @@
       </div>
       <div class="dialog-body">
         <p id="editorDesc"></p>
+        <section id="researchGuide" class="research-guide" hidden></section>
         <div class="editor-options">
           <span id="draftStatus">填写研究信息</span
           ><label
@@ -190,6 +245,7 @@
         </div>
         <div class="preview" id="preview"></div>
         <div class="rating" id="rating" aria-label="使用效果评分"></div>
+        <section id="writingHandoff" class="research-guide" hidden></section>
         <div id="customTools" class="manager-actions" hidden>
           <button class="btn" id="editCustom">编辑模板</button
           ><button class="btn danger" id="deleteCustom">删除模板</button>
